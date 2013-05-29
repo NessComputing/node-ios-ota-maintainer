@@ -25,28 +25,61 @@ class Maintainer
       @get_users,
       @user_application_mapping,
       @parallel_branch_and_tags,
-      @cleanup_leafs
+      @parallel_get_artifacts
+      # @cleanup_leafs
     ])
 
   ###
-  Usermapping
+  Parallel get_applications mapping.
+  @param {Array} users The list of users to map applications to
+  @param {Function} fn The callback function
   ###
   user_application_mapping: (users, fn) =>
-    async.map users, @get_applications
-    , (err, usermapping) =>
-      console.log usermapping
-      fn(err, usermapping)
+    async.map users, @get_applications, fn
+
+  ###
+  Parallel get_branch and get_tags mapping.
+  @param {Array} infolist The list of user/apps objects
+  @param {Function} fn The callback function
+  ###
+  parallel_branch_and_tags: (infolist, fn) =>
+    async.map infolist, (info, cb) =>
+      async.map info.apps, (app, cb2) =>
+        combined_info = { user: info.user, app: app }
+
+        async.parallel
+          branches: async.apply(@get_branches, combined_info)
+          tags: async.apply(@get_tags, combined_info)
+        , fn
 
   ###
   ###
-  parallel_branch_and_tags: (info, fn) =>
-    fn(null, "awesome")
+  parallel_get_artifacts: (artifactinfo_list, fn) =>
+    console.log artifactinfo_list
+
+    async.parallel
+      branches: async.map
 
   ###
   Cleanup leafs for archives and branches
   ###
-  cleanup_leafs: (info, fn) =>
+  cleanup_leafs: (leafinfo, fn) =>
+    console.log leafinfo
     fn(null, "cool")
+
+  ###
+  Sends a request to delete a given artifact.
+  @param {Object} artifactinfo The information to describe a single artifact
+  ###
+  cleanup_artifact: (artifactinfo, fn) =>
+    paths = [
+      artifactinfo.user,
+      artifactinfo.app,
+      artifactinfo.type,
+      artifactinfo.artifact
+    ]
+    request url: @app_url(paths), method: 'DELETE', json: true
+    , (err, resp, body) => fn(err, body)
 
   ###
   Helper function for the base app url.
@@ -120,7 +153,7 @@ class Maintainer
   @param {Object} artifactinfo The user, app, type, and artifacts
   @param {Function} fn The callback function
   ###
-  get_archives: (artifactinfo fn) =>
+  get_archives: (artifactinfo, fn) =>
     @app_request artifactinfo.user
     , artifactinfo.app, artifactinfo.type, 'archives'
     , (err, body) =>
