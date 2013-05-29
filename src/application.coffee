@@ -9,8 +9,8 @@ The base application class.
 class Application
   constructor: ->
     process.on 'SIGINT', () =>
-        logger.info 'Got SIGINT. Exiting...'
-        process.exit(0)
+      logger.info 'Received SIGINT. Exiting...'
+      process.exit(0)
 
     @maintainer = new Maintainer()
 

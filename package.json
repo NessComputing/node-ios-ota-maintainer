@@ -14,7 +14,7 @@
     "nconf": "0.6.7",
     "pkginfo": "0.3.0",
     "request": "2.21.0",
-    "q": "0.9.4"
+    "async": "0.2.9"
   },
   "devDependencies": {
     "mocha": "1.10.0",
