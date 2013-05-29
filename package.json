@@ -23,9 +23,9 @@
     "codo": "1.7.0"
   },
   "scripts": {
-    "pretest": "cake build",
-    "prepublish": "cake build",
-    "test": "cake -r dot test"
+    "pretest": "./node_modules/.bin/cake build",
+    "prepublish": "./node_modules/.bin/cake build",
+    "test": "./node_modules/.bin/cake -r dot test"
   },
   "main": "./lib/application"
 }
