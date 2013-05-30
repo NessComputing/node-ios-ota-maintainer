@@ -1,5 +1,5 @@
 {
-  "name":"node-ios-ota-maintainer",
+  "name":"ios-ota-maintainer",
   "version":"0.0.2",
   "description": "An ios-ota janitor",
   "author": "Josh Toft <josh@likeness.com>",
@@ -27,5 +27,5 @@
     "prepublish": "cake build",
     "test": "cake -r dot test"
   },
-  "main": "./lib/application"
+  "main": "./lib/maintainer.js"
 }
