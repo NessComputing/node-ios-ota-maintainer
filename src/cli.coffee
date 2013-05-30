@@ -39,7 +39,7 @@ class CLI
       # max archives
       .alias('m', 'max-archives')
       .describe('m', 'Maximum number of archives for all branches/tags')
-      .default('m', 10)
+      .default('m', 50)
 
       # Run as a loop
       .alias('L', 'loop')
