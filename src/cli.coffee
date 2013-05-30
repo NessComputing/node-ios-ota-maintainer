@@ -23,7 +23,7 @@ class CLI
 
       # port
       .alias('P', 'port')
-      .describe('P', 'The port co connect to')
+      .describe('P', 'The port to connect to')
       .default('P', '3000')
 
       # logging
