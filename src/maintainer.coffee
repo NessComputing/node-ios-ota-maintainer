@@ -69,22 +69,30 @@ class Maintainer
         fn(err, [].concat.apply([], app_list))
 
   ###
+  Parallel cleanup archives that are out of the max-archive bounds.
+  @param {Array} artifactinfo_list The list of artifacts to iterate and trim
+  @param {Function} fn The callback function
   ###
   parallel_clean_archives: (artifactinfo_list, fn) =>
-    # @get_archives artifactinfo_list[0], (err, info) =>
-      # archives = info.archives.sort().reverse()
-      # archives.splice(0, config.get('max-archives'))
+    async.each artifactinfo_list, (artifactinfo, finished_set) =>
+      @get_archives artifactinfo, (err, info) =>
+        archives = (parseInt(a) for a in info.archives).sort().reverse()
+        archives.splice(0, config.get('max-archives'))
 
-      # current = 2908
-      # archiveinfo =
-      #   user: info.user
-      #   app: info.app
-      #   type: info.type
-      #   artifact: info.artifact
-      #   archive: current
+        async.each archives, (archive, finished_archive) =>
+          archiveinfo =
+            user: info.user
+            app: info.app
+            type: info.type
+            artifact: info.artifact
+            archive: archive
 
-      # @cleanup_archive archiveinfo, (err, body) =>
-      #   logger.info body
+          @cleanup_archive archiveinfo, (err, body) =>
+            logger.info body
+            finished_archive(null, null)
+
+      , finished_set
+    , fn
 
   ###
   Sends a request to delete a given archive.

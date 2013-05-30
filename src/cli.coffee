@@ -33,8 +33,8 @@ class CLI
 
       # clean interval
       .alias('i', 'interval')
-      .describe('i', 'Clean interval (in seconds)')
-      .default('i', 43200)
+      .describe('i', 'Clean interval (in milliseconds)')
+      .default('i', 900000)
 
       # max archives
       .alias('m', 'max-archives')
