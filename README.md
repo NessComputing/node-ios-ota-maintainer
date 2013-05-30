@@ -16,7 +16,7 @@ Options:
   -P, --port          The port to connect to                               [default: "3000"]
   -l, --loglevel      Set the log level (debug, info, warn, error, fatal)  [default: "warn"]
   -i, --interval      Clean interval (in milliseconds)                     [default: 900000]
-  -m, --max-archives  Maximum number of archives for all branches/tags     [default: 10]
+  -m, --max-archives  Maximum number of archives for all branches/tags     [default: 50]
   -L, --loop          Runs the application in an event loop                [default: false]
   -h, --help          Shows this message                                   [default: false]
 ```
