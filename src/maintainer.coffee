@@ -1,4 +1,5 @@
 config = require 'nconf'
+logger = require './logger'
 request = require 'request'
 path = require 'path'
 url = require 'url'
@@ -25,8 +26,7 @@ class Maintainer
       @get_users,
       @user_application_mapping,
       @parallel_branch_and_tags,
-      @parallel_get_artifacts
-      # @cleanup_leafs
+      @parallel_clean_archives
     ])
 
   ###
@@ -43,42 +43,63 @@ class Maintainer
   @param {Function} fn The callback function
   ###
   parallel_branch_and_tags: (infolist, fn) =>
-    async.map infolist, (info, cb) =>
-      async.map info.apps, (app, cb2) =>
+    async.map infolist, (info, mergeuser) =>
+      async.map info.apps, (app, mergeapp) =>
         combined_info = { user: info.user, app: app }
 
         async.parallel
           branches: async.apply(@get_branches, combined_info)
           tags: async.apply(@get_tags, combined_info)
-        , fn
+        , (err, pdata) =>
+          branches = (user: pdata.branches.user
+            , app: pdata.branches.app
+            , artifact: art
+            , type: pdata.branches.type \
+            for art in pdata.branches.artifacts)
+
+          tags = (user: pdata.tags.user
+            , app: pdata.tags.app
+            , artifact: art
+            , type: pdata.tags.type \
+            for art in pdata.tags.artifacts)
+
+          mergeapp(err, branches.concat(tags))
+
+      , (err, app_list) =>
+        fn(err, [].concat.apply([], app_list))
 
   ###
   ###
-  parallel_get_artifacts: (artifactinfo_list, fn) =>
-    console.log artifactinfo_list
+  parallel_clean_archives: (artifactinfo_list, fn) =>
+    # @get_archives artifactinfo_list[0], (err, info) =>
+      # archives = info.archives.sort().reverse()
+      # archives.splice(0, config.get('max-archives'))
 
-    async.parallel
-      branches: async.map
+      # current = 2908
+      # archiveinfo =
+      #   user: info.user
+      #   app: info.app
+      #   type: info.type
+      #   artifact: info.artifact
+      #   archive: current
+
+      # @cleanup_archive archiveinfo, (err, body) =>
+      #   logger.info body
 
   ###
-  Cleanup leafs for archives and branches
+  Sends a request to delete a given archive.
+  @param {Object} archiveinfo The information to describe a single artifact
   ###
-  cleanup_leafs: (leafinfo, fn) =>
-    console.log leafinfo
-    fn(null, "cool")
-
-  ###
-  Sends a request to delete a given artifact.
-  @param {Object} artifactinfo The information to describe a single artifact
-  ###
-  cleanup_artifact: (artifactinfo, fn) =>
+  cleanup_archive: (archiveinfo, fn) =>
     paths = [
-      artifactinfo.user,
-      artifactinfo.app,
-      artifactinfo.type,
-      artifactinfo.artifact
+      archiveinfo.user,
+      archiveinfo.app,
+      archiveinfo.type,
+      archiveinfo.artifact,
+      'archives',
+      archiveinfo.archive
     ]
-    request url: @app_url(paths), method: 'DELETE', json: true
+    request url: @app_url(paths...), method: 'DELETE', json: true
     , (err, resp, body) => fn(err, body)
 
   ###
@@ -155,12 +176,13 @@ class Maintainer
   ###
   get_archives: (artifactinfo, fn) =>
     @app_request artifactinfo.user
-    , artifactinfo.app, artifactinfo.type, 'archives'
+    , artifactinfo.app, artifactinfo.type, artifactinfo.artifact, 'archives'
     , (err, body) =>
       fn err,
         user: artifactinfo.user
         app: artifactinfo.app
         type: artifactinfo.type
+        artifact: artifactinfo.artifact
         archives: body["archives"]
 
 module.exports = Maintainer
