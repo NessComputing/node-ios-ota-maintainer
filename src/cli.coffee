@@ -63,8 +63,8 @@ class CLI
   # Configures the nconf mapping where the priority matches the order
   configure: () =>
     @set_overrides()
-    @set_argv()
     @set_env()
+    @set_argv()
     @set_file()
     @set_defaults()
 
